@@ -27,6 +27,10 @@
 #include "Trigger.h"
 #include "Birefringence.h"
 
+#include <omp.h>
+#include <mutex>
+#include <vector>
+
 using namespace std;
 
 #ifdef ARA_UTIL_EXISTS
@@ -328,8 +332,6 @@ int main(int argc, char **argv) {   // read setup.txt file
 
     cout<<"powerthreshold : "<<trigger->powerthreshold<<endl;
 
-    int check_station_DC;
-
     ofstream TrigWind;
     TrigWind.open("outputs/TrigWindowStudy.txt");
         
@@ -407,16 +409,29 @@ int main(int argc, char **argv) {   // read setup.txt file
     int Events_Thrown = 0;
     int Events_Passed = 0;
 
-    while (inu < nuLimit){
-        check_station_DC = 0;
-        check_station_DC = 0;
+    mutex events_l;
+    vector<shared_ptr<Event>> events;
+
+    #pragma omp parallel for
+    for (int i = 0; i < nuLimit; i++) {
+        shared_ptr<Event> event = make_shared<Event>(settings1, spectra,
+                primary1, icemodel, detector, signal, sec1, i);
+        events_l.lock();
+        events.push_back(event);
+        events_l.unlock();
+    }
+
+    for (decltype(events.size()) i = 0; i < events.size(); i++) {
+        int check_station_DC = 0;
+
         if ( settings1->DEBUG_MODE_ON==0 ) {
             std::cerr<<"*";
-            if ( Events_Thrown%100 == 0 )
-                cout<<"Thrown "<<Events_Thrown<<endl;
+            if (i % 100 == 0) {
+                cout <<"Thrown "<< i << endl;
+            }
         }
 
-        event = new Event ( settings1, spectra, primary1, icemodel, detector, signal, sec1, Events_Thrown );
+        shared_ptr<Event> event = events[i];
         if(event->Nu_Interaction.size()<1){
             // If for some reason no interactions were placed into the event holder, continue.
             // This should be exceedingly rare, but could happen if something
@@ -428,11 +443,6 @@ int main(int argc, char **argv) {   // read setup.txt file
             // so this is just better generically.
             cout<<"Warning! The interaction vector is empty!"<<endl;
             cout<<"Continuing on to the next event."<<endl;
-            if (settings1->EVENT_GENERATION_MODE ==1){
-                // If reading in events from a list, make sure you move to next event 
-                Events_Thrown++;
-                inu++;
-            }
             continue;
         }
         event->inu_passed = -1;
@@ -453,8 +463,6 @@ int main(int argc, char **argv) {   // read setup.txt file
                 event_file << event->Nu_Interaction[interaction_i].nnu.Phi()     << " "; // IND_NNU_PHI       
                 event_file << event->Nu_Interaction[interaction_i].elast_y       << endl; // ELAST
 
-                inu++;
-                Events_Thrown++;
                 event->delete_all();
 
             } // end add event to file
@@ -472,67 +480,32 @@ int main(int argc, char **argv) {   // read setup.txt file
 
         // go further only if we picked up usable posnu
         if (event->Nu_Interaction[0].pickposnu>0) {
-
-            /*
-            if (settings1->NOISE_WAVEFORM_GENERATE_MODE == 0) {// noise waveforms will be generated for each evts
-                trigger->GetNewNoiseWaveforms(settings1, detector, report);
-            }
-            */
-
-
-            //--------------------------------------------------
-            // cout<<"inu : "<<inu<<endl;
-            // cout<<"event->pnu : "<<event->pnu<<endl;
-            // cout<<"posnu : ";
-            // event->Nu_Interaction[0].posnu.Print();
-            // cout<<"nnu : ";
-            // event->Nu_Interaction[0].nnu.Print();
-            // cout<<"event->n_interactions : "<<event->n_interactions<<endl;
-            // cout<<"nu_flavor : "<<event->nuflavor<<endl;
-            // cout<<"event->Nu_Interaction[0].vmmhz1m[0] : "<<event->Nu_Interaction[0].vmmhz1m[0]<<endl;
-            // cout<<"pickposnu : "<<event->Nu_Interaction[0].pickposnu<<endl;
-            //-------------------------------------------------- 
-
-            // connect Interaction class (nu interaction with ice) and Detector class (detector properties and layout)
-            // save signal, noise at each antennas to Report class
-            //report->Connect_Interaction_Detector (event, detector, raysolver, signal, icemodel, settings1, trigger);
-
-            //report->Connect_Interaction_Detector (event, detector, raysolver, signal, icemodel, settings1, trigger, theEvent);
-            report->Connect_Interaction_Detector_V2(event, detector, raysolver, signal, icemodel, birefringence, settings1, trigger, Events_Thrown);
-            //report->Connect_Interaction_Detector (event, detector, raysolver, signal, icemodel, settings1, trigger, theEvent, Events_Thrown);
+            report->Connect_Interaction_Detector_V2(event.get(), detector,
+                    raysolver, signal, icemodel, birefringence, settings1,
+                    trigger, i);
 
             #ifdef ARA_UTIL_EXISTS
-                if (settings1->DATA_LIKE_OUTPUT !=0){
-                    int stationID;
-                    int stationIndex;
-                    if (settings1->DETECTOR == 4){
-                        stationID = settings1->DETECTOR_STATION;
-                        stationIndex = 0;
-                    }
-                    else if (settings1->DETECTOR == 5){
-                        stationID = 6;
-                        stationIndex = 0;
-                    } else {
-                        stationID = 0;
-                        stationIndex = 0;
-                    }
-
-                    if (report->stations[stationIndex].Global_Pass) {
-                        // report->MakeUsefulEvent(detector, settings1, trigger, stationID, stationIndex, theIcrrEvent);
-                        cout << endl << "Making useful event" << endl;
-                        report->MakeUsefulEvent(detector, settings1, trigger, stationID, stationIndex, theAtriEvent);
-                        /*
-                        for (int i_chan = 0; i_chan< 16; i_chan++){
-                            int elecChan = AraGeomTool::Instance()->getElecChanFromRFChan(i_chan, stationID);
-                            int string_i = detector->getStringfromArbAntID( stationIndex, i_chan);
-                            int antenna_i = detector->getAntennafromArbAntID( stationIndex, i_chan);
-                            cout << "Output: " << elecChan << " : " << theAtriEvent->fTimes[elecChan][1] <<  " : " << report->stations[stationIndex].strings[string_i].antennas[antenna_i].time_mimic[1] << endl;
-                        }
-                        */
-                    }
-                    weight = event->Nu_Interaction[0].weight;
+            if (settings1->DATA_LIKE_OUTPUT !=0){
+                int stationID;
+                int stationIndex;
+                if (settings1->DETECTOR == 4){
+                    stationID = settings1->DETECTOR_STATION;
+                    stationIndex = 0;
                 }
-                // cout << "weight: " << weight <<endl;    
+                else if (settings1->DETECTOR == 5){
+                    stationID = 6;
+                    stationIndex = 0;
+                } else {
+                    stationID = 0;
+                    stationIndex = 0;
+                }
+
+                if (report->stations[stationIndex].Global_Pass) {
+                    cout << endl << "Making useful event" << endl;
+                    report->MakeUsefulEvent(detector, settings1, trigger, stationID, stationIndex, theAtriEvent);
+                }
+                weight = event->Nu_Interaction[0].weight;
+            }
             #endif
 
             report->ClearUselessfromConnect(detector, settings1, trigger);
@@ -582,16 +555,16 @@ int main(int argc, char **argv) {   // read setup.txt file
                              
                         // test increment weight
                         if (settings1->INTERACTION_MODE==1) {
-                            count1->incrementEventsFound( event->Nu_Interaction[0].weight, event );
+                            count1->incrementEventsFound( event->Nu_Interaction[0].weight, event.get());
                         }
                         else if (settings1->INTERACTION_MODE==0) {
-                            count1->incrementEventsFound( event->Nu_Interaction[0].probability, event );
+                            count1->incrementEventsFound( event->Nu_Interaction[0].probability, event.get());
                         }
                         else if (settings1->INTERACTION_MODE==3) {
-                            count1->incrementEventsFound( event->Nu_Interaction[0].probability, event );
+                            count1->incrementEventsFound( event->Nu_Interaction[0].probability, event.get());
                         }
                         else if (settings1->INTERACTION_MODE==4) {
-                            count1->incrementEventsFound( event->Nu_Interaction[0].weight, event );
+                            count1->incrementEventsFound( event->Nu_Interaction[0].weight, event.get());
                         }    
                     }
                     check_station_DC++;
@@ -599,34 +572,12 @@ int main(int argc, char **argv) {   // read setup.txt file
                 }
             }
 
-            /*
-            AraTree2->Fill();   //fill interaction every events
-            // for 1, save all events whether passed trigger or not
-            if (settings1->DATA_LIKE_OUTPUT==2) {
-                //theEvent = &report->theUsefulEvent;
-                eventTree->Fill();
-            }
-            // for 0, save events which passed trigger
-            else if (settings1->DATA_LIKE_OUTPUT==1) {
-                //if ( Global_Pass_Flag == 1 ) {
-                if ( check_station_DC > 0 ) {
-                    //theEvent = &report->theUsefulEvent;
-                    eventTree->Fill();
-                }
-            }
-            theEvent = NULL;
-
-            delete theEvent;
-            */
-
             settings1->ACCUM_TRIG_SEARCH_BINS_STATION0 += report->stations[0].total_trig_search_bin;
         } // if pickposnu > 0
         else {
-            //cout<<"pickposnu : "<<event->Nu_Interaction[0].pickposnu<<endl;
             report->delete_all();
             event->delete_all();
         }
-
 
         // test FILL_TREE_MODE
         if (settings1->FILL_TREE_MODE==0) { // fill event event  
@@ -684,38 +635,12 @@ int main(int argc, char **argv) {   // read setup.txt file
                 #endif
             }
         }
-        if (settings1->EVENT_GENERATION_MODE == 1){
-            inu++;
-        }
-        else if (settings1->ONLY_PASSED_EVENTS == 1){
-            if (check_station_DC > 0){
-                inu++;
-            }
-        }
-        else {
-            inu++;
-        }
+
         if (check_station_DC > 0){
             Events_Passed++;
         }
         Events_Thrown++;
-             
 
-        //theEvent = NULL;
-
-        /*
-        if (settings1->NOISE_WAVEFORM_GENERATE_MODE == 0) {// noise waveforms will be generated for each evts
-            // remove noise waveforms for next evt
-            rigger->ClearNoiseWaveforms();
-        }
-        */
-
-        // if(inu==nuLimit){
-        //      cout<<endl<<"sizeof: Report= "<<sizeof(*report)<<"  station= "<<sizeof(report->stations[0])<<"  antenna= "<<sizeof(report->stations[0].strings[0].antennas[0])<<endl;
-        //      cout<<"sizeof: Event= "<<sizeof(*event)<<" Interaction= "<<sizeof(event->Nu_Interaction[0])<<"  TOTAL SIZE= "<<sizeof(*report)+sizeof(*event)+sizeof(report->stations[0])+16*sizeof(report->stations[0].strings[0].antennas[0])+sizeof(event->Nu_Interaction[0])<<endl;
-        // }
-
-        delete event;
         delete report;
         #ifdef ARA_UTIL_EXISTS
             delete theIcrrEvent;
