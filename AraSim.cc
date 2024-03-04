@@ -407,7 +407,12 @@ int main(int argc, char **argv) {   // read setup.txt file
     int Events_Thrown = 0;
     int Events_Passed = 0;
 
+    int NUM_THREADS =2;
+    std::atomic<int> Events_thrown(0);
+
     while (inu < nuLimit){
+	auto task = [inu, &Events_thrown]{ //this wraps the whole content of the while loop exept for the last couple lines
+
         check_station_DC = 0;
         check_station_DC = 0;
         if ( settings1->DEBUG_MODE_ON==0 ) {
@@ -721,8 +726,15 @@ int main(int argc, char **argv) {   // read setup.txt file
             delete theIcrrEvent;
             delete theAtriEvent;
         #endif
+	
+	Events_Thrown++;
 
+	}//ends auto task parenthesis
+
+	pool.submit(task);
     } // end loop over neutrinos
+
+    pool.waitAll();//waits till all tasks complete
 
     settings1->NNU = Events_Thrown;
     settings1->NNU_PASSED = Total_Global_Pass;

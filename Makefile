@@ -22,9 +22,9 @@ SRCSUF = ${SrcSuf}
 CXX = g++
 
 #Generic and Site Specific Flags
-CXXFLAGS     += $(SYSINCLUDES) $(INC_ARA_UTIL)
+CXXFLAGS     += $(SYSINCLUDES) $(INC_ARA_UTIL) -fopenmp
 #LDFLAGS      += -L. -g -I$(BOOST_ROOT) $(ROOTLDFLAGS) $(LD_ARA_UTIL) -Wl
-LDFLAGS      += -L. -g -I$(BOOST_ROOT) $(ROOTLDFLAGS) $(LD_ARA_UTIL) -Wl,--no-as-needed
+LDFLAGS      += -L. -g -I$(BOOST_ROOT) $(ROOTLDFLAGS) $(LD_ARA_UTIL) -Wl,--no-as-needed -fopenmp
 #,--no-as-needed
 #LDFLAGS      += -L. -g -I$(BOOST_ROOT) $(ROOTLDFLAGS) $(LD_ARA_UTIL)
 ARA_ROOT_FLAGS = 
