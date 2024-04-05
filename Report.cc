@@ -441,26 +441,36 @@ void Report::clear_useless(Settings *settings1)
     }
 }
 
-void ProcessFrequencyDomainSignal(
-    Station stations[],
-    int stationIndex,
-    int stringIndex,
-    int antennaIndex,
-    Detector *detector,
-    Event *event,
-    IceModel *icemodel,
-    Settings *settings1,
-    vector<vector<double>> &RayStep,
-    const Vector &n_trg_pokey,
-    const Vector &n_trg_slappy,
-    double ray_sol_cnt,
-    double viewangle,
-    double IceAttenFactor,
-    double mag,
-    double fresnel,
-    double *volts_forfft,
-    double Pol_factor)
-{
+void Report::ProcessFrequencyDomainSignal(
+    std::vector<Station_r>& stations,
+    int i, int j, int k,
+    Detector* detector,
+    Event* event,
+    IceModel* icemodel,
+    Settings* settings1,
+    std::vector<std::vector<std::vector<double>>>& RayStep,
+    Vector& n_trg_pokey,
+    Vector& n_trg_slappy,
+    int ray_sol_cnt,
+    double& viewangle,
+    double& IceAttenFactor,
+    double& mag,
+    double& fresnel,
+    double* volts_forfft,
+    double& Pol_factor,
+    double& vmmhz1m_tmp,
+    double& freq_tmp,
+    double& heff,
+    double& antenna_theta,
+    double& antenna_phi,
+    Vector& Pol_vector,
+    Signal* signal,
+    double& vmmhz1m_em,
+    std::vector<std::vector<double>>& ray_output,
+    double& vmmhz1m_sum, // Added
+    Vector& Pol_vector_src // Added
+){
+
     // initially give raysol has actual signal
     stations[i].strings[j].antennas[k].SignalExt[ray_sol_cnt] = 1;
 
@@ -936,32 +946,43 @@ void Report::Connect_Interaction_Detector_V2(Event *event, Detector *detector, R
                                 stations[i].strings[j].antennas[k].Pol_factorV.push_back(abs(thetaHat * Pol_vector));
                                 stations[i].strings[j].antennas[k].phi_rec.push_back(antenna_phi * (PI / 180));
                                 stations[i].strings[j].antennas[k].theta_rec.push_back(antenna_theta * (PI / 180));
-
+                                
+                                if (settings1->SIMULATION_MODE == 0){
                                 // old freq domain signal mode (AVZ model)
-                                if (settings1->SIMULATION_MODE == 0)
-                                {
-                                    ProcessFrequencyDomainSignal(
-                                        stations,
-                                        i,
-                                        j,
-                                        k,
-                                        detector,
-                                        event,
-                                        icemodel,
-                                        settings1,
-                                        RayStep,
-                                        n_trg_pokey,
-                                        n_trg_slappy,
-                                        ray_sol_cnt,
-                                        viewangle,
-                                        IceAttenFactor,
-                                        mag,
-                                        fresnel,
-                                        volts_forfft,
-                                        Pol_factor);
-                                } // if SIMULATION_MODE = 0
+                                ProcessFrequencyDomainSignal(
+                                stations,
+                                i,
+                                j,
+                                k,
+                                detector,
+                                event,
+                                icemodel,
+                                settings1,
+                                RayStep,
+                                n_trg_pokey,
+                                n_trg_slappy,
+                                ray_sol_cnt,
+                                viewangle,
+                                IceAttenFactor,
+                                mag,
+                                fresnel,
+                                volts_forfft,
+                                Pol_factor,
+                                vmmhz1m_tmp,
+                                freq_tmp,
+                                heff,
+                                antenna_theta,
+                                antenna_phi,
+                                Pol_vector,
+                                signal,  // Passed signal object
+                                vmmhz1m_em,  // Passed vmmhz1m_em
+                                ray_output,  // Passed ray_output
+                                vmmhz1m_sum, // Pass by reference
+                                Pol_vector_src
+                            );
+                            // if SIMULATION_MODE = 0
 
-                                else if (settings1->SIMULATION_MODE == 1)
+                            }else if (settings1->SIMULATION_MODE == 1)
                                 {
 
                                     // if event is not calpulser
