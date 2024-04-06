@@ -428,7 +428,35 @@ class Report {
         double pa_snr_cap = 25.;
             // KAH thinks this is the max SNR she had efficiencies calculated for
             // KAH says the PA has a SNR cap of 25 in practice and may have a link showing this.
-
+        void ProcessFrequencyDomainSignal(
+            std::vector<Station_r>& stations,
+            int i, int j, int k,
+            Detector* detector,
+            Event* event,
+            IceModel* icemodel,
+            Settings* settings1,
+            std::vector<std::vector<std::vector<double>>>& RayStep,
+            Vector& n_trg_pokey,
+            Vector& n_trg_slappy,
+            int ray_sol_cnt,
+            double& viewangle,
+            double& IceAttenFactor,
+            double& mag,
+            double& fresnel,
+            double* volts_forfft,
+            double& Pol_factor,
+            double& vmmhz1m_tmp,
+            double& freq_tmp,
+            double& heff,
+            double& antenna_theta,
+            double& antenna_phi,
+            Vector& Pol_vector,
+            Signal* signal,
+            double& vmmhz1m_em,
+            std::vector<std::vector<double>>& ray_output,
+            double& vmmhz1m_sum, // Added
+            Vector& Pol_vector_src // Added
+        );
         ClassDef(Report,1);
 
 };
