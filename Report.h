@@ -469,40 +469,50 @@ public:
         double &freq_tmp,
         double &freq_lastbin,
         double &heff,
-        double& heff_lastbin,
-        double* T_forint,
-        double* volts_forint,
+        double &heff_lastbin,
+        double *T_forint,
+        double *volts_forint,
         Vector &Pol_vector_src);
 
-
     void processCalpulserEvent(
-    Event *event,
-    std::vector<Station_r> &stations,
-    int i,
-    int j,
-    int k,
-    int ray_sol_cnt,
-    Settings *settings1,
-    Detector *detector,
-    IceModel *icemodel,
-    double &antenna_theta,
-    double &antenna_phi,
-    Vector &n_trg_pokey,
-    Vector &n_trg_slappy,
-    Vector &Pol_vector,
-    double &Pol_factor,
-    int gain_ch_no,
-    double &dT_forfft,
-    double &dF_Nnew,
-    double &freq_tmp,
-    double &freq_lastbin,
-    double &heff,
-    double &heff_lastbin,
-    double *T_forint,
-    double *volts_forint,
-    std::vector<std::vector<double>>& ray_output);
+        Event *event,
+        std::vector<Station_r> &stations,
+        int i,
+        int j,
+        int k,
+        int ray_sol_cnt,
+        Settings *settings1,
+        Detector *detector,
+        IceModel *icemodel,
+        double &antenna_theta,
+        double &antenna_phi,
+        Vector &n_trg_pokey,
+        Vector &n_trg_slappy,
+        Vector &Pol_vector,
+        double &Pol_factor,
+        int gain_ch_no,
+        double &dT_forfft,
+        double &dF_Nnew,
+        double &freq_tmp,
+        double &freq_lastbin,
+        double &heff,
+        double &heff_lastbin,
+        double *T_forint,
+        double *volts_forint,
+        std::vector<std::vector<double>> &ray_output);
 
-    ClassDef(Report, 1);
+    void processStationNoiseWaveForms(
+        std::vector<Station_r> &stations,
+        int ray_sol_cnt,
+        Settings *settings1,
+        Detector *detector,
+        int i,
+        int N_noise,
+        Trigger *trigger,
+        int &ch_ID,
+        int debugmode);
+
+        ClassDef(Report, 1);
 };
 
 #endif // REPORT_H
