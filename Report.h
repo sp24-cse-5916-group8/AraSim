@@ -513,6 +513,28 @@ public:
         int debugmode);
 
         ClassDef(Report, 1);
+
+    void processTriggerAndMimicWaveforms(
+        std::vector<Station_r> &stations,
+        int ray_sol_cnt,
+        Settings *settings1,
+        Detector *detector,
+        int i,
+        int N_noise,
+        Trigger *trigger,
+        int &ch_ID,
+        int debugmode,
+        double *all_receive_ang,
+        Event *event,
+        int &evt,
+        int &trig_window_bin,
+        int &N_pass,
+        int &N_pass_V,
+        int &N_pass_H,
+        int &waveformLength,
+        int &waveformCenter,
+        double &viewangle
+        );
 };
 
 #endif // REPORT_H
