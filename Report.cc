@@ -21,6 +21,7 @@
 #include "TMath.h"
 
 #include <cstdlib>
+#include <omp.h>
 
 ClassImp(Report);
 ClassImp(Antenna_r);
@@ -2491,6 +2492,7 @@ void Report::Connect_Interaction_Detector_V2(Event *event, Detector *detector, R
     int N_pass_V; // number of trigger passed channels (Vpol antennas)
     int N_pass_H; // number of trigger passed channels (Hpol antennas)
 
+    #pragma omp parallel for
     for (int i = 0; i < detector->params.number_of_stations; i++)
     {
 
@@ -2499,7 +2501,8 @@ void Report::Connect_Interaction_Detector_V2(Event *event, Detector *detector, R
         max_PeakV_tmp = 0.;         // first max_PeakV_tmp is 0.
 
         stations[i].Total_ray_sol = 0; // initial Total_ray_sol value
-
+        
+        #pragma omp parallel for
         for (int j = 0; j < detector->stations[i].strings.size(); j++)
         {
 
@@ -2508,7 +2511,8 @@ void Report::Connect_Interaction_Detector_V2(Event *event, Detector *detector, R
             {
                 T_forint[n] = init_T + (double)n * settings1->TIMESTEP * 1.e9; // in ns
             }
-
+            
+            #pragma omp parallel for
             for (int k = 0; k < detector->stations[i].strings[j].antennas.size(); k++)
             {
                 // cout << i << " : " << j << " : " << k << endl;
