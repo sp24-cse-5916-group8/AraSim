@@ -3919,7 +3919,8 @@ void Report::rerun_event(Event *event, Detector *detector,
         {
             T_forint[n] = init_T + (double)n * settings->TIMESTEP * 1.e9; // in ns
         }
-
+        
+        #pragma omp parallel for
         for (int k = 0; k < num_antennas; k++)
         {
 
