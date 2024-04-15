@@ -49,7 +49,7 @@ PROGRAMS = AraSim
 all : $(PROGRAMS) $(ROOT_LIBRARY)
 
 AraSim : $(OBJS)
-	$(LD) -L. $(OBJS) $(LDFLAGS) $(LIBS) -o $@
+	$(LD) -fopenmp -L. $(OBJS) $(LDFLAGS) $(LIBS) -o $@
 	@echo "done."
     
 deconvolveWaveform : $(OBJS2)
@@ -82,16 +82,16 @@ endif
 
 %.$(OBJSUF) : %.C
 	@echo "<**Compiling**> "$<
-	$(CXX) $(CXXFLAGS) $ -c $< -o  $@
+	$(CXX) -fopenmp $(CXXFLAGS) $ -c $< -o $@
 
 %.$(OBJSUF) : %.cc %.h
 	@echo "<**Compiling**> "$<
-	$(CXX) $(CXXFLAGS) $ -c $< -o  $@
+	$(CXX) -fopenmp $(CXXFLAGS) $ -c $< -o $@
 
 # added for fortran code compiling
 %.$(OBJSUF) : %.f
 	@echo "<**Compiling**> "$<
-	$(G77) -c $<
+	$(G77) -fopenmp -c $<
 
 eventSimDict.C: $(CLASS_HEADERS)
 	@echo "Generating dictionary ..."
