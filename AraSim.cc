@@ -415,7 +415,7 @@ int main(int argc, char **argv) {   // read setup.txt file
         if ( settings1->DEBUG_MODE_ON==0 ) {
             //std::cerr<<"*";
             if ( Events_Thrown%100 == 0 )
-                cout<<"Thrown "<<Events_Thrown<<endl;
+                //cout<<"Thrown "<<Events_Thrown<<endl;
         }
 
         event = new Event ( settings1, spectra, primary1, icemodel, detector, signal, sec1, Events_Thrown );
@@ -428,8 +428,8 @@ int main(int argc, char **argv) {   // read setup.txt file
             // then no interaction will be added and Nu_Interaction will be empty.
             // But also, it's bad practice to assume the size of a vector anyway
             // so this is just better generically.
-            cout<<"Warning! The interaction vector is empty!"<<endl;
-            cout<<"Continuing on to the next event."<<endl;
+            // cout<<"Warning! The interaction vector is empty!"<<endl;
+            // cout<<"Continuing on to the next event."<<endl;
             if (settings1->EVENT_GENERATION_MODE ==1){
                 // If reading in events from a list, make sure you move to next event 
                 Events_Thrown++;
@@ -443,17 +443,17 @@ int main(int argc, char **argv) {   // read setup.txt file
             // Write event lists to file, no simulation
             for (int interaction_i=0; interaction_i<event->Nu_Interaction.size(); interaction_i++){
                 
-                event_file << inu << " "; // EVID    
-                event_file << event->nuflavorint << " "; // NUFLAVORINT       
-                event_file << event->nu_nubar << " "; // NUBAR       
-                event_file << event->pnu << " "; // PNU      
-                event_file << event->Nu_Interaction[interaction_i].currentint    << " "; // CURRENTINT       
-                event_file << event->Nu_Interaction[interaction_i].posnu.R()     << " "; // IND_POSNU_R      
-                event_file << event->Nu_Interaction[interaction_i].posnu.Theta() << " "; // IND_POSNU_THETA       
-                event_file << event->Nu_Interaction[interaction_i].posnu.Phi()   << " "; // IND_POSNU_PHI      
-                event_file << event->Nu_Interaction[interaction_i].nnu.Theta()   << " "; // IND_NNU_THETA      
-                event_file << event->Nu_Interaction[interaction_i].nnu.Phi()     << " "; // IND_NNU_PHI       
-                event_file << event->Nu_Interaction[interaction_i].elast_y       << endl; // ELAST
+                // event_file << inu << " "; // EVID    
+                // event_file << event->nuflavorint << " "; // NUFLAVORINT       
+                // event_file << event->nu_nubar << " "; // NUBAR       
+                // event_file << event->pnu << " "; // PNU      
+                // event_file << event->Nu_Interaction[interaction_i].currentint    << " "; // CURRENTINT       
+                // event_file << event->Nu_Interaction[interaction_i].posnu.R()     << " "; // IND_POSNU_R      
+                // event_file << event->Nu_Interaction[interaction_i].posnu.Theta() << " "; // IND_POSNU_THETA       
+                // event_file << event->Nu_Interaction[interaction_i].posnu.Phi()   << " "; // IND_POSNU_PHI      
+                // event_file << event->Nu_Interaction[interaction_i].nnu.Theta()   << " "; // IND_NNU_THETA      
+                // event_file << event->Nu_Interaction[interaction_i].nnu.Phi()     << " "; // IND_NNU_PHI       
+                // event_file << event->Nu_Interaction[interaction_i].elast_y       << endl; // ELAST
 
                 //inu++;
                 Events_Thrown++;
@@ -521,7 +521,7 @@ int main(int argc, char **argv) {   // read setup.txt file
 
                     if (report->stations[stationIndex].Global_Pass) {
                         // report->MakeUsefulEvent(detector, settings1, trigger, stationID, stationIndex, theIcrrEvent);
-                        cout << endl << "Making useful event" << endl;
+                        //cout << endl << "Making useful event" << endl;
                         report->MakeUsefulEvent(detector, settings1, trigger, stationID, stationIndex, theAtriEvent);
                         /*
                         for (int i_chan = 0; i_chan< 16; i_chan++){
@@ -550,7 +550,7 @@ int main(int argc, char **argv) {   // read setup.txt file
                 if (inu>0) {
                     if (pre_posnu_x==cur_posnu_x && pre_posnu_y==cur_posnu_y && pre_posnu_z==cur_posnu_z) {
                     }
-                    else cout<<"posnu location changed!"<<endl;
+                    //else cout<<"posnu location changed!"<<endl;
                 }
                 pre_posnu_x = event->Nu_Interaction[0].posnu.GetX();
                 pre_posnu_y = event->Nu_Interaction[0].posnu.GetY();
@@ -575,7 +575,7 @@ int main(int argc, char **argv) {   // read setup.txt file
                     max_dt = report->stations[i].max_arrival_time - report->stations[i].min_arrival_time;
                 // check the total global trigger passed
                 if (report->stations[i].Global_Pass) {
-                    cout<<"\nGlobal_Pass : "<<report->stations[i].Global_Pass<<" evt : "<<inu<<" added weight : "<<event->Nu_Interaction[0].weight<<endl;
+                    //cout<<"\nGlobal_Pass : "<<report->stations[i].Global_Pass<<" evt : "<<inu<<" added weight : "<<event->Nu_Interaction[0].weight<<endl;
                     if ( check_station_DC == 0) { // count trigger pass only once per event
                              
                         Total_Global_Pass ++;
