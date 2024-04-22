@@ -26,6 +26,7 @@
 #include "Tools.h"
 #include "Trigger.h"
 #include "Birefringence.h"
+#include <omp.h>
 
 using namespace std;
 
@@ -407,11 +408,12 @@ int main(int argc, char **argv) {   // read setup.txt file
     int Events_Thrown = 0;
     int Events_Passed = 0;
 
-    while (inu < nuLimit){
+    #pragma omp parallel for
+    for (; inu < nuLimit ; inu++ ){//loops over neutrinos
         check_station_DC = 0;
         check_station_DC = 0;
         if ( settings1->DEBUG_MODE_ON==0 ) {
-            std::cerr<<"*";
+            //std::cerr<<"*";
             if ( Events_Thrown%100 == 0 )
                 cout<<"Thrown "<<Events_Thrown<<endl;
         }
@@ -431,7 +433,7 @@ int main(int argc, char **argv) {   // read setup.txt file
             if (settings1->EVENT_GENERATION_MODE ==1){
                 // If reading in events from a list, make sure you move to next event 
                 Events_Thrown++;
-                inu++;
+                //inu++;
             }
             continue;
         }
@@ -453,7 +455,7 @@ int main(int argc, char **argv) {   // read setup.txt file
                 event_file << event->Nu_Interaction[interaction_i].nnu.Phi()     << " "; // IND_NNU_PHI       
                 event_file << event->Nu_Interaction[interaction_i].elast_y       << endl; // ELAST
 
-                inu++;
+                //inu++;
                 Events_Thrown++;
                 event->delete_all();
 
@@ -630,36 +632,36 @@ int main(int argc, char **argv) {   // read setup.txt file
 
         // test FILL_TREE_MODE
         if (settings1->FILL_TREE_MODE==0) { // fill event event  
-            AraTree2->Fill();   //fill interaction every events
+            //AraTree2->Fill();   //fill interaction every events
             #ifdef ARA_UTIL_EXISTS
                 // for 1, save all events whether passed trigger or not
                 if (settings1->DATA_LIKE_OUTPUT==2) {
                     // theEvent = &report->theUsefulEvent;
-                    eventTree->Fill();
+                    //eventTree->Fill();
                 }
                 // for 0, save events which passed trigger
                 else if (settings1->DATA_LIKE_OUTPUT==1) {
                     if ( check_station_DC > 0 ) {
                         // theEvent = &report->theUsefulEvent;
-                        eventTree->Fill();
+                        //eventTree->Fill();
                     }
                 }
             #endif
         }
         else if (settings1->FILL_TREE_MODE==1) { // fill only usable posnu event 
             if (event->Nu_Interaction[0].pickposnu>0) {
-                AraTree2->Fill();   //fill interaction every events
+                //AraTree2->Fill();   //fill interaction every events
                 #ifdef ARA_UTIL_EXISTS
                     // for 1, save all events whether passed trigger or not
                     if (settings1->DATA_LIKE_OUTPUT==2) {
                         // theEvent = &report->theUsefulEvent;
-                        eventTree->Fill();
+                        //eventTree->Fill();
                     }
                     // for 0, save events which passed trigger
                     else if (settings1->DATA_LIKE_OUTPUT==1) {
                         if ( check_station_DC > 0 ) {
                             //theEvent = &report->theUsefulEvent;
-                            eventTree->Fill();
+                            //eventTree->Fill();
                         }
                     }
                 #endif
@@ -667,33 +669,33 @@ int main(int argc, char **argv) {   // read setup.txt file
         }
         else if (settings1->FILL_TREE_MODE==2) { // fill only triggered event    
             if (check_station_DC>0) {
-                AraTree2->Fill();   //fill interaction every events
+                //AraTree2->Fill();   //fill interaction every events
                 #ifdef ARA_UTIL_EXISTS
                     // for 1, save all events whether passed trigger or not
                     if (settings1->DATA_LIKE_OUTPUT==2) {
                         //theEvent = &report->theUsefulEvent;
-                        eventTree->Fill();
+                       // eventTree->Fill();
                     }
                     // for 0, save events which passed trigger
                     else if (settings1->DATA_LIKE_OUTPUT==1) {
                         if ( check_station_DC > 0 ) {
                             //theEvent = &report->theUsefulEvent;
-                            eventTree->Fill();
+                            //eventTree->Fill();
                         }
                     }
                 #endif
             }
         }
         if (settings1->EVENT_GENERATION_MODE == 1){
-            inu++;
+            //inu++;
         }
         else if (settings1->ONLY_PASSED_EVENTS == 1){
             if (check_station_DC > 0){
-                inu++;
+                //inu++;
             }
         }
         else {
-            inu++;
+            //inu++;
         }
         if (check_station_DC > 0){
             Events_Passed++;
