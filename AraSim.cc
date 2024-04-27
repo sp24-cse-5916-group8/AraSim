@@ -407,7 +407,14 @@ int main(int argc, char **argv) {   // read setup.txt file
     int Events_Thrown = 0;
     int Events_Passed = 0;
 
-    while (inu < nuLimit){
+    #pragma omp parallel for 
+    for (inu = inu; inu < nuLimit ; inu++ ){//loops over neutrinos
+
+        int threadID = omp_get_thread_num(); // Get the ID of the thread
+        cout << "Hello from thread " << threadID << std::endl;
+        int nthreads=omp_get_num_threads();
+        cout << "Number of threads " << nthreads << std::endl;
+
         check_station_DC = 0;
         check_station_DC = 0;
         if ( settings1->DEBUG_MODE_ON==0 ) {
@@ -431,7 +438,7 @@ int main(int argc, char **argv) {   // read setup.txt file
             if (settings1->EVENT_GENERATION_MODE ==1){
                 // If reading in events from a list, make sure you move to next event 
                 Events_Thrown++;
-                inu++;
+                //inu++;
             }
             continue;
         }
@@ -453,7 +460,7 @@ int main(int argc, char **argv) {   // read setup.txt file
                 event_file << event->Nu_Interaction[interaction_i].nnu.Phi()     << " "; // IND_NNU_PHI       
                 event_file << event->Nu_Interaction[interaction_i].elast_y       << endl; // ELAST
 
-                inu++;
+                //inu++;
                 Events_Thrown++;
                 event->delete_all();
 
@@ -685,15 +692,15 @@ int main(int argc, char **argv) {   // read setup.txt file
             }
         }
         if (settings1->EVENT_GENERATION_MODE == 1){
-            inu++;
+            //inu++;
         }
         else if (settings1->ONLY_PASSED_EVENTS == 1){
             if (check_station_DC > 0){
-                inu++;
+                //inu++;
             }
         }
         else {
-            inu++;
+            //inu++;
         }
         if (check_station_DC > 0){
             Events_Passed++;
