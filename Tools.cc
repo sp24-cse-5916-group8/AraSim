@@ -12,6 +12,7 @@
 // fft related
 #include "FFTtools.h"
 #include <fftw3.h>
+#include <omp.h>
 
 using std::cout;
 
@@ -128,24 +129,26 @@ void Tools::realft(double *data, const int isign, int nsize){
     * Inverse FFT has a N/2 normalization factor.
     */
 
-
-    if(isign==1){
-        FFTWComplex *fftarray;
-        fftarray=FFTtools::doFFT(nsize,data);
-        format_transform(nsize, 1, (fftw_complex*)fftarray, data);
-        delete [] fftarray;
-    }
-    else if(isign==-1){
-        fftw_complex *fftarray;
-        fftarray=(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (nsize/2+1));
-        format_transform(nsize,-1,fftarray, data);
-        double* invfft;
-        invfft=FFTtools::doInvFFT(nsize, (FFTWComplex*)fftarray);
-        for(int i=0;i<nsize;i++)
-            data[i]=invfft[i]*nsize/2;
-        free(fftarray);
-        delete [] invfft;
-    }
+    // #pragma omp critical
+    // {
+        if(isign==1){
+            FFTWComplex *fftarray;
+            fftarray=FFTtools::doFFT(nsize,data);
+            format_transform(nsize, 1, (fftw_complex*)fftarray, data);
+            delete [] fftarray;
+        }
+        else if(isign==-1){
+            fftw_complex *fftarray;
+            fftarray=(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (nsize/2+1));
+            format_transform(nsize,-1,fftarray, data);
+            double* invfft;
+            // invfft=FFTtools::doInvFFT(nsize, (FFTWComplex*)fftarray);//wtf is this
+            // for(int i=0;i<nsize;i++)
+            //     data[i]=invfft[i]*nsize/2;
+            // free(fftarray);
+            delete [] invfft;
+        }
+//    }
 }
 
 void Tools::format_transform(int nsize, int trdir, fftw_complex *out, double *data){

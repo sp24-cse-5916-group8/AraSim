@@ -43,8 +43,10 @@ void test();
 
 string outputdir="outputs";
 
+
 int main(int argc, char **argv) {   // read setup.txt file
-    
+    omp_set_num_threads(40);
+
     Settings *settings1 = new Settings();
 
     cout<<"\n\tDefault values!"<<endl;
@@ -404,12 +406,20 @@ int main(int argc, char **argv) {   // read setup.txt file
         nuLimit = settings1->NNU;
     }
     // cout << "nuLimit: " << nuLimit << endl; 
+    #pragma omp atomic{
     int inu = 0;
     int Events_Thrown = 0;
     int Events_Passed = 0;
+    }
+    #pragma omp atomic {
+    #pragma omp parallel for 
+    for (inu = inu; inu < nuLimit ; inu++ ){//loops over neutrinos
+    #pragma omp atomic {
+        int threadID = omp_get_thread_num(); // Get the ID of the thread
+        cout << "Hello from thread " << threadID << std::endl;
+        int nthreads=omp_get_num_threads();
+        cout << "Number of threads " << nthreads << std::endl;
 
-    #pragma omp parallel for
-    for (; inu < nuLimit ; inu++ ){//loops over neutrinos
         check_station_DC = 0;
         check_station_DC = 0;
         // if ( settings1->DEBUG_MODE_ON==0 ) {
@@ -723,9 +733,9 @@ int main(int argc, char **argv) {   // read setup.txt file
             delete theIcrrEvent;
             delete theAtriEvent;
         #endif
-
+    }//end critical segment
     } // end loop over neutrinos
-
+}
     settings1->NNU = Events_Thrown;
     settings1->NNU_PASSED = Total_Global_Pass;
 
