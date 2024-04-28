@@ -26,6 +26,7 @@
 #include "Tools.h"
 #include "Trigger.h"
 #include "Birefringence.h"
+#include <omp.h>
 
 using namespace std;
 
@@ -409,7 +410,7 @@ int main(int argc, char **argv) {   // read setup.txt file
 
     #pragma omp parallel for 
     for (inu = inu; inu < nuLimit ; inu++ ){//loops over neutrinos
-
+    
         int threadID = omp_get_thread_num(); // Get the ID of the thread
         cout << "Hello from thread " << threadID << std::endl;
         int nthreads=omp_get_num_threads();
@@ -505,7 +506,10 @@ int main(int argc, char **argv) {   // read setup.txt file
             //report->Connect_Interaction_Detector (event, detector, raysolver, signal, icemodel, settings1, trigger);
 
             //report->Connect_Interaction_Detector (event, detector, raysolver, signal, icemodel, settings1, trigger, theEvent);
+            
             report->Connect_Interaction_Detector_V2(event, detector, raysolver, signal, icemodel, birefringence, settings1, trigger, Events_Thrown);
+ 
+
             //report->Connect_Interaction_Detector (event, detector, raysolver, signal, icemodel, settings1, trigger, theEvent, Events_Thrown);
 
             #ifdef ARA_UTIL_EXISTS
@@ -541,8 +545,11 @@ int main(int argc, char **argv) {   // read setup.txt file
                 }
                 // cout << "weight: " << weight <<endl;    
             #endif
-
+            
+            //omp_set_lock(&writelock);
             report->ClearUselessfromConnect(detector, settings1, trigger);
+            //omp_unset_lock(&writelock);
+
             for(int i=0;i<event->Nu_Interaction.size(); i++)
                 event->Nu_Interaction[i].clear_useless(settings1);
 
@@ -725,10 +732,9 @@ int main(int argc, char **argv) {   // read setup.txt file
         delete event;
         delete report;
         #ifdef ARA_UTIL_EXISTS
-            delete theIcrrEvent;
-            delete theAtriEvent;
+            // delete theIcrrEvent;
+            // delete theAtriEvent;
         #endif
-
     } // end loop over neutrinos
 
     settings1->NNU = Events_Thrown;

@@ -22,9 +22,9 @@ SRCSUF = ${SrcSuf}
 CXX = g++
 
 #Generic and Site Specific Flags
-CXXFLAGS     += $(SYSINCLUDES) $(INC_ARA_UTIL) -pg
+CXXFLAGS     += $(SYSINCLUDES) $(INC_ARA_UTIL) -pg -fopenmp 
 #LDFLAGS      += -L. -g -I$(BOOST_ROOT) $(ROOTLDFLAGS) $(LD_ARA_UTIL) -Wl
-LDFLAGS      += -L. -g -I$(BOOST_ROOT) $(ROOTLDFLAGS) $(LD_ARA_UTIL) -Wl,--no-as-needed -pg
+LDFLAGS      += -L. -g -I$(BOOST_ROOT) $(ROOTLDFLAGS) $(LD_ARA_UTIL) -Wl,--no-as-needed -pg -fopenmp 
 #,--no-as-needed
 #LDFLAGS      += -L. -g -I$(BOOST_ROOT) $(ROOTLDFLAGS) $(LD_ARA_UTIL)
 ARA_ROOT_FLAGS = 
@@ -49,7 +49,7 @@ PROGRAMS = AraSim
 all : $(PROGRAMS) $(ROOT_LIBRARY)
 
 AraSim : $(OBJS)
-	$(LD) -fopenmp -L. $(OBJS) $(LDFLAGS) $(LIBS) -o $@
+	$(LD) -L. $(OBJS) $(LDFLAGS) $(LIBS) -o $@
 	@echo "done."
     
 deconvolveWaveform : $(OBJS2)
@@ -82,16 +82,16 @@ endif
 
 %.$(OBJSUF) : %.C
 	@echo "<**Compiling**> "$<
-	$(CXX) -fopenmp $(CXXFLAGS) $ -c $< -o  $@
+	$(CXX) $(CXXFLAGS) $ -c $< -o  $@
 
 %.$(OBJSUF) : %.cc %.h
 	@echo "<**Compiling**> "$<
-	$(CXX) -fopenmp $(CXXFLAGS) $ -c $< -o  $@
+	$(CXX) $(CXXFLAGS) $ -c $< -o  $@
 
 # added for fortran code compiling
 %.$(OBJSUF) : %.f
 	@echo "<**Compiling**> "$<
-	$(G77) -fopenmp -c $<
+	$(G77) -c $<
 
 eventSimDict.C: $(CLASS_HEADERS)
 	@echo "Generating dictionary ..."

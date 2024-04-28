@@ -12,6 +12,8 @@
 // fft related
 #include "FFTtools.h"
 #include <fftw3.h>
+#include <omp.h>
+
 
 using std::cout;
 
@@ -116,6 +118,10 @@ void Tools::ShiftRight(double *x,const int n,int ishift) {
     \return void
 */
 
+omp_lock_t writelock;
+
+//omp_init_lock(&writelock);
+
 void Tools::realft(double *data, const int isign, int nsize){
 
     /*
@@ -127,8 +133,15 @@ void Tools::realft(double *data, const int isign, int nsize){
     * For forward FFT, complex conjugate is taken since isign convention is opposite in numerical recipes.
     * Inverse FFT has a N/2 normalization factor.
     */
+           cout << "Entering block "  << std::endl;
 
+    omp_lock_t writelock;
+    omp_init_lock(&writelock);  // Initialize the lock
+    omp_set_lock(&writelock);
+              cout << "Entering block 2"  << std::endl;
 
+           int threadID = omp_get_thread_num(); // Get the ID of the thread
+        cout << "Hello from thread " << threadID << std::endl;
     if(isign==1){
         FFTWComplex *fftarray;
         fftarray=FFTtools::doFFT(nsize,data);
@@ -146,6 +159,8 @@ void Tools::realft(double *data, const int isign, int nsize){
         free(fftarray);
         delete [] invfft;
     }
+     omp_unset_lock(&writelock);
+    omp_destroy_lock(&writelock); 
 }
 
 void Tools::format_transform(int nsize, int trdir, fftw_complex *out, double *data){
